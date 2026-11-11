@@ -13,7 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { COLORS } from "../constants/theme";
 
-export default function Header({ isDesktop, onMenuPress }) {
+export default function Header({ isDesktop, onMenuPress, title = "Dashboard" })  {
   const { width } = useWindowDimensions();
 
   const isCompact = width < 480;
@@ -73,7 +73,7 @@ export default function Header({ isDesktop, onMenuPress }) {
             ]}
             numberOfLines={1}
           >
-            Dashboard
+            {title}
           </Text>
         )}
       </View>

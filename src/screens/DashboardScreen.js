@@ -20,6 +20,7 @@ import StatisticsSection from "../components/StatisticsSection";
 import { COLORS } from "../constants/theme";
 
 import TrainerManagementScreen from "./TrainerManagementScreen";
+import BatchManagementScreen from "./BatchManagementScreen";
 
 // ORIGINAL VTMS DATA
 
@@ -136,6 +137,7 @@ export default function DashboardScreen() {
       <Header
         isDesktop={isDesktop}
         onMenuPress={() => setDrawerVisible(true)}
+        title={activeMenu}
       />
 
       <View style={styles.mainLayout}>
@@ -153,6 +155,8 @@ export default function DashboardScreen() {
         {/* MAIN DASHBOARD */}
         {activeMenu === "Trainer Management" ? (
         <TrainerManagementScreen />
+        ) : activeMenu === "Batch Management" ? (
+        <BatchManagementScreen />
         ) : (
         <ScrollView
             style={styles.content}
