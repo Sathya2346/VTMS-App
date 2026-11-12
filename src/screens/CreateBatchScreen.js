@@ -177,7 +177,6 @@ export default function CreateBatchScreen({
 }) {
   const { width } = useWindowDimensions();
 
-  // Layout breakpoints
   const isMobile = width < 600;
   const isTablet = width >= 600 && width < 1024;
   const isWideScreen = width >= 1024;
@@ -212,23 +211,21 @@ export default function CreateBatchScreen({
   const [attachment, setAttachment] = useState(null);
   const [status, setStatus] = useState("Upcoming");
 
-    useEffect(() => {
+  useEffect(() => {
     if (!initialData) return;
 
     const normalizeDate = (value) => {
       if (!value) return "";
-      const parts = value.replaceAll("-", "/").split("/");
-      if (parts.length !== 3) return value;
-
-      // Existing list format: DD-MM-YYYY
-      return parts.join("/");
+      return value.replaceAll("-", "/");
     };
 
     setBatchName(initialData.name || "");
     setCourse(initialData.course || "");
     setRole(initialData.role || "");
     setDescription(initialData.description || "");
-    setCourseDuration(initialData.courseDuration || initialData.duration || "");
+    setCourseDuration(
+      initialData.courseDuration || initialData.duration || ""
+    );
 
     setStartDate(normalizeDate(initialData.startDate));
     setEndDate(normalizeDate(initialData.endDate));
@@ -243,6 +240,7 @@ export default function CreateBatchScreen({
     );
 
     const trainerValue = initialData.trainer || "";
+
     const matchedTrainer = TRAINERS.find(
       (item) =>
         item.email === trainerValue ||
@@ -252,18 +250,25 @@ export default function CreateBatchScreen({
     setTrainer(matchedTrainer ? matchedTrainer.email : "");
 
     setSelectedTrainees(
-      Array.isArray(initialData.trainees) ? initialData.trainees : []
+      Array.isArray(initialData.trainees)
+        ? initialData.trainees
+        : []
     );
 
     setSendEmail(initialData.sendEmail ?? true);
     setEmailTo(initialData.emailTo || "");
     setEmailSubject(initialData.emailSubject || "New Batch Assigned");
     setEmailPreview(initialData.emailPreview || "");
+
     setAttachment(
       initialData.attachment
-        ? { uri: initialData.attachment, fileName: "Existing attachment" }
+        ? {
+            uri: initialData.attachment,
+            fileName: "Existing attachment",
+          }
         : null
     );
+
     setStatus(initialData.status || "Upcoming");
   }, [initialData]);
 
@@ -368,28 +373,25 @@ export default function CreateBatchScreen({
     const start = parseDate(startDate);
     const end = parseDate(endDate);
 
-    if (!batchName.trim() || !course || !startDate || !endDate || !trainer) {
-     Alert.alert(
-      isEdit ? "Update Batch" : "Create Batch",
-      isEdit
-        ? "Are you sure you want to save these changes?"
-        : "Form validation successful. Backend save and email delivery are not connected yet.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: isEdit ? "Save Changes" : "Continue",
-          onPress: () => onCreate?.({
-            ...initialData,
-            ...batchData,
-          }),
-        },
-      ]
-    );
+    if (
+      !batchName.trim() ||
+      !course ||
+      !startDate.trim() ||
+      !endDate.trim() ||
+      !trainer
+    ) {
+      Alert.alert(
+        "Required Fields",
+        "Please fill Batch Name, Course, Start Date, End Date and Trainer."
+      );
       return;
     }
 
     if (!start || !end) {
-      Alert.alert("Invalid Date", "Enter valid dates in DD/MM/YYYY format.");
+      Alert.alert(
+        "Invalid Date",
+        "Enter valid dates in DD/MM/YYYY format."
+      );
       return;
     }
 
@@ -402,11 +404,15 @@ export default function CreateBatchScreen({
     }
 
     if (!selectedDays.length) {
-      Alert.alert("Training Days", "Select at least one training day.");
+      Alert.alert(
+        "Training Days",
+        "Select at least one training day."
+      );
       return;
     }
 
     const batchData = {
+      ...initialData,
       name: batchName.trim(),
       course,
       role,
@@ -419,6 +425,7 @@ export default function CreateBatchScreen({
       endTime,
       days: selectedDays,
       trainer,
+      trainerName: selectedTrainer?.name || "",
       trainees: selectedTrainees,
       sendEmail,
       emailFrom: ADMIN_EMAIL,
@@ -430,11 +437,14 @@ export default function CreateBatchScreen({
     };
 
     Alert.alert(
-      "Batch Details Ready",
-      "Form validation successful. Backend save and email delivery are not connected yet.",
+      isEdit ? "Update Batch" : "Create Batch",
+      isEdit
+        ? "Are you sure you want to save these changes?"
+        : "Form validation successful. Backend save and email delivery are not connected yet.",
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: "OK",
+          text: isEdit ? "Save Changes" : "Continue",
           onPress: () => onCreate?.(batchData),
         },
       ]
@@ -457,11 +467,11 @@ export default function CreateBatchScreen({
     >
       <View style={styles.pageHeading}>
         <Text style={styles.pageTitle}>
-        {isEdit ? "Edit Batch" : "Create New Batch"}
+          {isEdit ? "Edit Batch" : "Create New Batch"}
         </Text>
 
         <Text style={styles.pageSubtitle}>
-        {isEdit
+          {isEdit
             ? "Update and manage existing batch details"
             : "Create and configure a new training batch"}
         </Text>
@@ -646,9 +656,11 @@ export default function CreateBatchScreen({
                   <Text style={styles.trainerName}>
                     {selectedTrainer.name}
                   </Text>
+
                   <Text style={styles.trainerEmail}>
                     {selectedTrainer.email}
                   </Text>
+
                   <Text style={styles.trainerMeta}>
                     Experience: {selectedTrainer.experience}
                   </Text>
@@ -675,6 +687,7 @@ export default function CreateBatchScreen({
                 size={18}
                 color="#777777"
               />
+
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search Trainee"
@@ -870,17 +883,18 @@ export default function CreateBatchScreen({
         </Pressable>
 
         <Pressable
-            style={[styles.actionButton, styles.primaryButton]}
-            onPress={handleCreate}
-            >
-            <Ionicons
-                name={isEdit ? "save-outline" : "add"}
-                size={18}
-                color="#FFFFFF"
-            />
-            <Text style={styles.primaryButtonText}>
-                {isEdit ? "Save Changes" : "Create Batch"}
-            </Text>
+          style={[styles.actionButton, styles.primaryButton]}
+          onPress={handleCreate}
+        >
+          <Ionicons
+            name={isEdit ? "save-outline" : "add"}
+            size={18}
+            color="#FFFFFF"
+          />
+
+          <Text style={styles.primaryButtonText}>
+            {isEdit ? "Save Changes" : "Create Batch"}
+          </Text>
         </Pressable>
       </View>
     </ScrollView>
