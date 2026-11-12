@@ -224,7 +224,7 @@ function TableCell({ children, style }) {
 }
 
 // MAIN SCREEN
-export default function BatchManagementScreen() {
+export default function BatchManagementScreen({ onCreateBatch }) {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 900;
@@ -248,10 +248,7 @@ export default function BatchManagementScreen() {
   }, [search]);
 
   const handleCreateBatch = () => {
-    Alert.alert(
-      "Create New Batch",
-      "The Create New Batch form will be implemented in the next step."
-    );
+    onCreateBatch?.();
   };
 
   return (

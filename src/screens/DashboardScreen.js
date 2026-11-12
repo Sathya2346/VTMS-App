@@ -21,6 +21,7 @@ import { COLORS } from "../constants/theme";
 
 import TrainerManagementScreen from "./TrainerManagementScreen";
 import BatchManagementScreen from "./BatchManagementScreen";
+import CreateBatchScreen from "./CreateBatchScreen";
 
 // ORIGINAL VTMS DATA
 
@@ -112,6 +113,7 @@ export default function DashboardScreen() {
   const isMobile = width < 1024;
 
   const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [showCreateBatch, setShowCreateBatch] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const contentColumns = width >= 1100 ? 2 : 1;
@@ -153,10 +155,20 @@ export default function DashboardScreen() {
         )}
 
         {/* MAIN DASHBOARD */}
-        {activeMenu === "Trainer Management" ? (
-        <TrainerManagementScreen />
+        {activeMenu === "Batch Management" && showCreateBatch ? (
+          <CreateBatchScreen
+            onBack={() => setShowCreateBatch(false)}
+            onCreate={(batchData) => {
+              console.log("New Batch:", batchData);
+              setShowCreateBatch(false);
+            }}
+          />
+        ) : activeMenu === "Trainer Management" ? (
+          <TrainerManagementScreen />
         ) : activeMenu === "Batch Management" ? (
-        <BatchManagementScreen />
+          <BatchManagementScreen
+            onCreateBatch={() => setShowCreateBatch(true)}
+          />
         ) : (
         <ScrollView
             style={styles.content}
