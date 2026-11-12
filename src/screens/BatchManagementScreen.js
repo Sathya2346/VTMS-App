@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/theme";
 
 // DEMO DATA
-const INITIAL_BATCHES = [
+export const INITIAL_BATCHES = [
   {
     id: 1,
     name: "Java Full Stack - Batch 01",
@@ -96,7 +96,7 @@ function ActionButton({ icon, color, onPress, label }) {
 }
 
 // BATCH ACTIONS
-function BatchActions({ batch }) {
+function BatchActions({ batch, onEdit, onDelete }) {
   const showMessage = (action) => {
     Alert.alert(
       action,
@@ -124,7 +124,7 @@ function BatchActions({ batch }) {
         icon="create-outline"
         color="#C47A00"
         label="Edit batch"
-        onPress={() => showMessage("Edit Batch")}
+        onPress={() => onEdit?.(batch)}
       />
 
       <ActionButton
@@ -140,8 +140,7 @@ function BatchActions({ batch }) {
               {
                 text: "Delete",
                 style: "destructive",
-                onPress: () =>
-                  Alert.alert("Demo Mode", "Backend delete will be connected later."),
+                onPress: () => onDelete?.(batch.id),
               },
             ]
           )
@@ -162,7 +161,7 @@ function Detail({ label, value }) {
 }
 
 // MOBILE BATCH CARD
-function BatchCard({ batch }) {
+function BatchCard({ batch, onEdit, onDelete }) {
   const { width } = useWindowDimensions();
   const isNarrowMobile = width < 380;
 
@@ -192,7 +191,11 @@ function BatchCard({ batch }) {
 
       <View style={styles.cardFooter}>
         <Text style={styles.actionLabel}>Actions</Text>
-        <BatchActions batch={batch} />
+        <BatchActions
+          batch={batch}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       </View>
     </View>
   );
@@ -224,28 +227,35 @@ function TableCell({ children, style }) {
 }
 
 // MAIN SCREEN
-export default function BatchManagementScreen({ onCreateBatch }) {
+export default function BatchManagementScreen({
+  batches = INITIAL_BATCHES,
+  onCreateBatch,
+  onEditBatch,
+  onDeleteBatch,
+}) {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 900;
 
   const [search, setSearch] = useState("");
 
-  const filteredBatches = useMemo(() => {
+    const filteredBatches = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
-    if (!keyword) return INITIAL_BATCHES;
+    if (!keyword) return batches;
 
-    return INITIAL_BATCHES.filter((batch) =>
+    return batches.filter((batch) =>
       [
         batch.name,
         batch.course,
         batch.trainer,
         batch.duration,
         batch.status,
-      ].some((value) => value.toLowerCase().includes(keyword))
+      ].some((value) =>
+        String(value || "").toLowerCase().includes(keyword)
+      )
     );
-  }, [search]);
+  }, [search, batches]);
 
   const handleCreateBatch = () => {
     onCreateBatch?.();
@@ -418,7 +428,11 @@ export default function BatchManagementScreen({ onCreateBatch }) {
                 </TableCell>
 
                 <TableCell style={styles.actionsColumn}>
-                  <BatchActions batch={batch} />
+                  <BatchActions
+                    batch={batch}
+                    onEdit={onEditBatch}
+                    onDelete={onDeleteBatch}
+                  />
                 </TableCell>
               </View>
             ))}

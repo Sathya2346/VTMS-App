@@ -1,5 +1,4 @@
-
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -170,7 +169,12 @@ function CheckBox({ checked }) {
   );
 }
 
-export default function CreateBatchScreen({ onBack, onCreate }) {
+export default function CreateBatchScreen({
+  onBack,
+  onCreate,
+  initialData = null,
+  isEdit = false,
+}) {
   const { width } = useWindowDimensions();
 
   // Layout breakpoints
@@ -207,6 +211,61 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
 
   const [attachment, setAttachment] = useState(null);
   const [status, setStatus] = useState("Upcoming");
+
+    useEffect(() => {
+    if (!initialData) return;
+
+    const normalizeDate = (value) => {
+      if (!value) return "";
+      const parts = value.replaceAll("-", "/").split("/");
+      if (parts.length !== 3) return value;
+
+      // Existing list format: DD-MM-YYYY
+      return parts.join("/");
+    };
+
+    setBatchName(initialData.name || "");
+    setCourse(initialData.course || "");
+    setRole(initialData.role || "");
+    setDescription(initialData.description || "");
+    setCourseDuration(initialData.courseDuration || initialData.duration || "");
+
+    setStartDate(normalizeDate(initialData.startDate));
+    setEndDate(normalizeDate(initialData.endDate));
+
+    setStartTime(initialData.startTime || "10:00 AM");
+    setEndTime(initialData.endTime || "11:30 AM");
+
+    setSelectedDays(
+      Array.isArray(initialData.days)
+        ? initialData.days
+        : ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    );
+
+    const trainerValue = initialData.trainer || "";
+    const matchedTrainer = TRAINERS.find(
+      (item) =>
+        item.email === trainerValue ||
+        item.name.toLowerCase() === trainerValue.toLowerCase()
+    );
+
+    setTrainer(matchedTrainer ? matchedTrainer.email : "");
+
+    setSelectedTrainees(
+      Array.isArray(initialData.trainees) ? initialData.trainees : []
+    );
+
+    setSendEmail(initialData.sendEmail ?? true);
+    setEmailTo(initialData.emailTo || "");
+    setEmailSubject(initialData.emailSubject || "New Batch Assigned");
+    setEmailPreview(initialData.emailPreview || "");
+    setAttachment(
+      initialData.attachment
+        ? { uri: initialData.attachment, fileName: "Existing attachment" }
+        : null
+    );
+    setStatus(initialData.status || "Upcoming");
+  }, [initialData]);
 
   const calculatedDuration = useMemo(() => {
     const start = parseDate(startDate);
@@ -310,10 +369,22 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
     const end = parseDate(endDate);
 
     if (!batchName.trim() || !course || !startDate || !endDate || !trainer) {
-      Alert.alert(
-        "Required Fields",
-        "Please fill Batch Name, Course, Start Date, End Date and Trainer."
-      );
+     Alert.alert(
+      isEdit ? "Update Batch" : "Create Batch",
+      isEdit
+        ? "Are you sure you want to save these changes?"
+        : "Form validation successful. Backend save and email delivery are not connected yet.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: isEdit ? "Save Changes" : "Continue",
+          onPress: () => onCreate?.({
+            ...initialData,
+            ...batchData,
+          }),
+        },
+      ]
+    );
       return;
     }
 
@@ -385,9 +456,14 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.pageHeading}>
-        <Text style={styles.pageTitle}>Create New Batch</Text>
+        <Text style={styles.pageTitle}>
+        {isEdit ? "Edit Batch" : "Create New Batch"}
+        </Text>
+
         <Text style={styles.pageSubtitle}>
-          Create and configure a new training batch
+        {isEdit
+            ? "Update and manage existing batch details"
+            : "Create and configure a new training batch"}
         </Text>
       </View>
 
@@ -794,11 +870,17 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
         </Pressable>
 
         <Pressable
-          style={[styles.actionButton, styles.primaryButton]}
-          onPress={handleCreate}
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" />
-          <Text style={styles.primaryButtonText}>Create Batch</Text>
+            style={[styles.actionButton, styles.primaryButton]}
+            onPress={handleCreate}
+            >
+            <Ionicons
+                name={isEdit ? "save-outline" : "add"}
+                size={18}
+                color="#FFFFFF"
+            />
+            <Text style={styles.primaryButtonText}>
+                {isEdit ? "Save Changes" : "Create Batch"}
+            </Text>
         </Pressable>
       </View>
     </ScrollView>
