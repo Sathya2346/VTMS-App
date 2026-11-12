@@ -1,6 +1,5 @@
 
 import React, { useMemo, useState } from "react";
-
 import {
   View,
   Text,
@@ -15,7 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/theme";
 
-// Demo data – later we can connect this with backend API
+// DEMO DATA
 const INITIAL_BATCHES = [
   {
     id: 1,
@@ -63,6 +62,7 @@ const INITIAL_BATCHES = [
   },
 ];
 
+// STATUS BADGE
 function StatusBadge({ status }) {
   const statusColors = {
     Active: { backgroundColor: "#DDF8E5", color: "#16833B" },
@@ -82,6 +82,7 @@ function StatusBadge({ status }) {
   );
 }
 
+// ACTION BUTTON
 function ActionButton({ icon, color, onPress, label }) {
   return (
     <Pressable
@@ -89,11 +90,12 @@ function ActionButton({ icon, color, onPress, label }) {
       style={styles.actionButton}
       accessibilityLabel={label}
     >
-      <Ionicons name={icon} size={18} color={color} />
+      <Ionicons name={icon} size={17} color={color} />
     </Pressable>
   );
 }
 
+// BATCH ACTIONS
 function BatchActions({ batch }) {
   const showMessage = (action) => {
     Alert.alert(
@@ -110,18 +112,21 @@ function BatchActions({ batch }) {
         label="View batch"
         onPress={() => showMessage("View Batch")}
       />
+
       <ActionButton
         icon="person-add-outline"
         color="#16833B"
         label="Assign trainee"
         onPress={() => showMessage("Assign Trainee")}
       />
+
       <ActionButton
         icon="create-outline"
         color="#C47A00"
         label="Edit batch"
         onPress={() => showMessage("Edit Batch")}
       />
+
       <ActionButton
         icon="trash-outline"
         color={COLORS.danger}
@@ -146,14 +151,34 @@ function BatchActions({ batch }) {
   );
 }
 
+// DETAIL
+function Detail({ label, value }) {
+  return (
+    <View style={styles.detailItem}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue}>{value}</Text>
+    </View>
+  );
+}
+
+// MOBILE BATCH CARD
 function BatchCard({ batch }) {
+  const { width } = useWindowDimensions();
+  const isNarrowMobile = width < 380;
+
   return (
     <View style={styles.batchCard}>
-      <View style={styles.cardHeading}>
+      <View
+        style={[
+          styles.cardHeading,
+          isNarrowMobile && styles.cardHeadingMobile,
+        ]}
+      >
         <View style={styles.cardTitleArea}>
           <Text style={styles.batchName}>{batch.name}</Text>
           <Text style={styles.courseName}>{batch.course}</Text>
         </View>
+
         <StatusBadge status={batch.status} />
       </View>
 
@@ -173,17 +198,35 @@ function BatchCard({ batch }) {
   );
 }
 
-function Detail({ label, value }) {
+// SUMMARY CARD
+function SummaryCard({ label, value, icon, color }) {
   return (
-    <View style={styles.detailItem}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+    <View style={styles.summaryCard}>
+      <View style={[styles.summaryIcon, { backgroundColor: `${color}18` }]}>
+        <Ionicons name={icon} size={21} color={color} />
+      </View>
+
+      <View style={styles.summaryInfo}>
+        <Text style={styles.summaryValue}>{value}</Text>
+        <Text style={styles.summaryLabel}>{label}</Text>
+      </View>
     </View>
   );
 }
 
+// TABLE CELL
+function TableCell({ children, style }) {
+  return (
+    <View style={[styles.tableCell, style]}>
+      {children}
+    </View>
+  );
+}
+
+// MAIN SCREEN
 export default function BatchManagementScreen() {
   const { width } = useWindowDimensions();
+
   const isDesktop = width >= 900;
 
   const [search, setSearch] = useState("");
@@ -230,7 +273,7 @@ export default function BatchManagementScreen() {
           style={styles.createButton}
           onPress={handleCreateBatch}
         >
-          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <Ionicons name="add" size={19} color="#FFFFFF" />
           <Text style={styles.createButtonText}>Create New Batch</Text>
         </Pressable>
       </View>
@@ -243,12 +286,14 @@ export default function BatchManagementScreen() {
           icon="albums-outline"
           color={COLORS.primaryLight}
         />
+
         <SummaryCard
           label="Active Batches"
           value={INITIAL_BATCHES.filter((b) => b.status === "Active").length}
           icon="checkmark-circle-outline"
           color="#16833B"
         />
+
         <SummaryCard
           label="Total Students"
           value={INITIAL_BATCHES.reduce((sum, b) => sum + b.students, 0)}
@@ -257,10 +302,11 @@ export default function BatchManagementScreen() {
         />
       </View>
 
-      {/* BATCH LIST */}
+      {/* ALL BATCHES */}
       <View style={styles.listContainer}>
+        {/* LIST HEADER */}
         <View style={styles.listHeader}>
-          <View>
+          <View style={styles.listHeaderText}>
             <Text style={styles.sectionTitle}>All Batches</Text>
             <Text style={styles.sectionSubtitle}>
               View and manage your training batches
@@ -276,7 +322,8 @@ export default function BatchManagementScreen() {
 
         {/* SEARCH */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#888888" />
+          <Ionicons name="search-outline" size={19} color="#888888" />
+
           <TextInput
             style={styles.searchInput}
             placeholder="Search by batch, course, trainer or status..."
@@ -284,6 +331,7 @@ export default function BatchManagementScreen() {
             value={search}
             onChangeText={setSearch}
           />
+
           {search.length > 0 && (
             <Pressable onPress={() => setSearch("")}>
               <Ionicons name="close-circle" size={19} color="#888888" />
@@ -291,49 +339,99 @@ export default function BatchManagementScreen() {
           )}
         </View>
 
-        {/* DESKTOP TABLE */}
+        {/* DESKTOP TABLE - NO HORIZONTAL SCROLL */}
         {isDesktop ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator>
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeading, styles.colBatch]}>Batch Name</Text>
-                <Text style={[styles.tableHeading, styles.colCourse]}>Course</Text>
-                <Text style={[styles.tableHeading, styles.colTrainer]}>Trainer</Text>
-                <Text style={[styles.tableHeading, styles.colDuration]}>Duration</Text>
-                <Text style={[styles.tableHeading, styles.colDate]}>Start On</Text>
-                <Text style={[styles.tableHeading, styles.colDate]}>End</Text>
-                <Text style={[styles.tableHeading, styles.colStudents]}>Students</Text>
-                <Text style={[styles.tableHeading, styles.colStatus]}>Status</Text>
-                <Text style={[styles.tableHeading, styles.colActions]}>Action</Text>
-              </View>
+          <View style={styles.table}>
+            {/* TABLE HEADER */}
+            <View style={styles.tableHeader}>
+              <TableCell style={styles.batchColumn}>
+                <Text style={styles.tableHeading}>Batch Name</Text>
+              </TableCell>
 
-              {filteredBatches.map((batch) => (
-                <View key={batch.id} style={styles.tableRow}>
-                  <Text style={[styles.tableText, styles.colBatch]} numberOfLines={2}>
+              <TableCell style={styles.courseColumn}>
+                <Text style={styles.tableHeading}>Course</Text>
+              </TableCell>
+
+              <TableCell style={styles.trainerColumn}>
+                <Text style={styles.tableHeading}>Trainer</Text>
+              </TableCell>
+
+              <TableCell style={styles.durationColumn}>
+                <Text style={styles.tableHeading}>Duration</Text>
+              </TableCell>
+
+              <TableCell style={styles.dateColumn}>
+                <Text style={styles.tableHeading}>Start On</Text>
+              </TableCell>
+
+              <TableCell style={styles.dateColumn}>
+                <Text style={styles.tableHeading}>End</Text>
+              </TableCell>
+
+              <TableCell style={styles.studentsColumn}>
+                <Text style={styles.tableHeading}>Students</Text>
+              </TableCell>
+
+              <TableCell style={styles.statusColumn}>
+                <Text style={styles.tableHeading}>Status</Text>
+              </TableCell>
+
+              <TableCell style={styles.actionsColumn}>
+                <Text style={styles.tableHeading}>Action</Text>
+              </TableCell>
+            </View>
+
+            {/* TABLE ROWS */}
+            {filteredBatches.map((batch) => (
+              <View key={batch.id} style={styles.tableRow}>
+                <TableCell style={styles.batchColumn}>
+                  <Text style={styles.tableText} numberOfLines={2}>
                     {batch.name}
                   </Text>
-                  <Text style={[styles.tableText, styles.colCourse]}>{batch.course}</Text>
-                  <Text style={[styles.tableText, styles.colTrainer]}>{batch.trainer}</Text>
-                  <Text style={[styles.tableText, styles.colDuration]}>{batch.duration}</Text>
-                  <Text style={[styles.tableText, styles.colDate]}>{batch.startDate}</Text>
-                  <Text style={[styles.tableText, styles.colDate]}>{batch.endDate}</Text>
-                  <Text style={[styles.tableText, styles.colStudents]}>{batch.students}</Text>
-                  <View style={styles.colStatus}>
-                    <StatusBadge status={batch.status} />
-                  </View>
-                  <View style={styles.colActions}>
-                    <BatchActions batch={batch} />
-                  </View>
-                </View>
-              ))}
+                </TableCell>
 
-              {filteredBatches.length === 0 && (
-                <Text style={styles.emptyText}>No batches found.</Text>
-              )}
-            </View>
-          </ScrollView>
+                <TableCell style={styles.courseColumn}>
+                  <Text style={styles.tableText} numberOfLines={2}>
+                    {batch.course}
+                  </Text>
+                </TableCell>
+
+                <TableCell style={styles.trainerColumn}>
+                  <Text style={styles.tableText}>{batch.trainer}</Text>
+                </TableCell>
+
+                <TableCell style={styles.durationColumn}>
+                  <Text style={styles.tableText}>{batch.duration}</Text>
+                </TableCell>
+
+                <TableCell style={styles.dateColumn}>
+                  <Text style={styles.tableText}>{batch.startDate}</Text>
+                </TableCell>
+
+                <TableCell style={styles.dateColumn}>
+                  <Text style={styles.tableText}>{batch.endDate}</Text>
+                </TableCell>
+
+                <TableCell style={styles.studentsColumn}>
+                  <Text style={styles.tableText}>{batch.students}</Text>
+                </TableCell>
+
+                <TableCell style={styles.statusColumn}>
+                  <StatusBadge status={batch.status} />
+                </TableCell>
+
+                <TableCell style={styles.actionsColumn}>
+                  <BatchActions batch={batch} />
+                </TableCell>
+              </View>
+            ))}
+
+            {filteredBatches.length === 0 && (
+              <Text style={styles.emptyText}>No batches found.</Text>
+            )}
+          </View>
         ) : (
-          /* MOBILE / TABLET CARDS */
+          /* MOBILE / TABLET */
           <View style={styles.mobileList}>
             {filteredBatches.map((batch) => (
               <BatchCard key={batch.id} batch={batch} />
@@ -349,301 +447,378 @@ export default function BatchManagementScreen() {
   );
 }
 
-function SummaryCard({ label, value, icon, color }) {
-  return (
-    <View style={styles.summaryCard}>
-      <View style={[styles.summaryIcon, { backgroundColor: `${color}18` }]}>
-        <Ionicons name={icon} size={22} color={color} />
-      </View>
-      <View style={styles.summaryInfo}>
-        <Text style={styles.summaryValue}>{value}</Text>
-        <Text style={styles.summaryLabel}>{label}</Text>
-      </View>
-    </View>
-  );
-}
-
+// STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: COLORS.background,
   },
+
   content: {
-    padding: 20,
-    paddingBottom: 35,
+    padding: 16,
+    paddingBottom: 20,
   },
+
   pageHeading: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     flexWrap: "wrap",
-    gap: 15,
-    marginBottom: 22,
+    gap: 12,
+    marginBottom: 16,
   },
+
   headingText: {
     flex: 1,
     minWidth: 180,
   },
+
   pageTitle: {
-    fontSize: 23,
+    fontSize: 22,
     fontWeight: "700",
     color: COLORS.text,
   },
+
   pageSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
-    marginTop: 5,
+    marginTop: 4,
   },
+
   createButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 7,
+    gap: 6,
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
     borderRadius: 8,
   },
+
   createButtonText: {
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
   },
+
+  // SUMMARY
   summaryRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 14,
-    marginBottom: 22,
+    gap: 12,
+    marginBottom: 16,
   },
+
   summaryCard: {
     flex: 1,
     minWidth: 145,
     backgroundColor: COLORS.surface,
-    borderRadius: 11,
-    padding: 15,
+    borderRadius: 10,
+    padding: 12,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
     elevation: 2,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 5,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
   },
+
   summaryIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 9,
     justifyContent: "center",
     alignItems: "center",
   },
+
   summaryInfo: {
     flex: 1,
+    minWidth: 0,
   },
+
   summaryValue: {
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: "700",
     color: COLORS.text,
   },
+
   summaryLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: COLORS.textSecondary,
     marginTop: 3,
   },
+
+  // LIST CONTAINER
   listContainer: {
     backgroundColor: COLORS.surface,
     borderRadius: 12,
-    padding: 17,
-    elevation: 3,
+    padding: 14,
+    minWidth: 0,
+    elevation: 2,
     shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 5,
   },
+
   listHeader: {
+    width: "100%",
+    minWidth: 0,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 10,
-    marginBottom: 17,
+    gap: 8,
+    marginBottom: 14,
   },
+
+  listHeaderText: {
+    flex: 1,
+    minWidth: 0,
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.text,
   },
+
   sectionSubtitle: {
     fontSize: 12,
     color: COLORS.textSecondary,
     marginTop: 4,
   },
+
   countBadge: {
     backgroundColor: "#EAE7FF",
-    paddingHorizontal: 11,
+    paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 20,
+    flexShrink: 0,
+    alignSelf: "flex-start",
   },
+
   countText: {
     color: COLORS.primary,
     fontSize: 11,
     fontWeight: "600",
   },
+
+  // SEARCH
   searchContainer: {
-    minHeight: 44,
+    minHeight: 42,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    gap: 9,
-    marginBottom: 18,
+    paddingHorizontal: 11,
+    gap: 8,
+    marginBottom: 14,
+    minWidth: 0,
   },
+
   searchInput: {
     flex: 1,
     minWidth: 0,
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.text,
-    paddingVertical: 9,
+    paddingVertical: 8,
     outlineStyle: "none",
   },
+
+  // DESKTOP TABLE
   table: {
-    minWidth: 1100,
+    width: "100%",
+    minWidth: 0,
   },
+
   tableHeader: {
-    minHeight: 48,
+    width: "100%",
+    minHeight: 42,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F3FC",
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
-  tableHeading: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: COLORS.textSecondary,
-    paddingHorizontal: 6,
-  },
+
   tableRow: {
-    minHeight: 66,
+    width: "100%",
+    minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: "#EEEEEE",
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
+
+  tableCell: {
+    minWidth: 0,
+    justifyContent: "center",
+    paddingHorizontal: 4,
+    flexShrink: 1,
+  },
+
+  tableHeading: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
+
   tableText: {
-    fontSize: 11,
+    fontSize: 10,
     color: COLORS.text,
-    paddingHorizontal: 6,
+    flexShrink: 1,
   },
-  colBatch: { width: 175 },
-  colCourse: { width: 125 },
-  colTrainer: { width: 85 },
-  colDuration: { width: 75 },
-  colDate: { width: 90 },
-  colStudents: { width: 65 },
-  colStatus: { width: 100, justifyContent: "center" },
-  colActions: { width: 150, justifyContent: "center" },
+
+  // FLEX COLUMN WIDTHS
+  batchColumn: { flex: 1.45 },
+  courseColumn: { flex: 1.05 },
+  trainerColumn: { flex: 0.72 },
+  durationColumn: { flex: 0.82 },
+  dateColumn: { flex: 0.95 },
+  studentsColumn: { flex: 0.55 },
+  statusColumn: { flex: 0.9 },
+  actionsColumn: { flex: 1.15 },
+
+  // STATUS
   statusBadge: {
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: 4,
     borderRadius: 20,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
   },
+
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
   },
+
   statusText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "600",
   },
+
+  // ACTIONS
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    flexWrap: "nowrap",
+    gap: 4,
   },
+
   actionButton: {
-    width: 29,
-    height: 29,
+    width: 27,
+    height: 28,
     borderRadius: 6,
     backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // MOBILE CARDS
   mobileList: {
     gap: 12,
+    minWidth: 0,
   },
+
   batchCard: {
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 9,
     padding: 13,
     gap: 13,
+    minWidth: 0,
   },
+
   cardHeading: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 8,
+    gap: 10,
   },
+
+  cardHeadingMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+
   cardTitleArea: {
     flex: 1,
     minWidth: 0,
+    width: "100%",
   },
+
   batchName: {
     fontSize: 14,
     fontWeight: "700",
     color: COLORS.text,
+    flexShrink: 1,
+    lineHeight: 21,
   },
+
   courseName: {
     fontSize: 11,
     color: COLORS.textSecondary,
     marginTop: 4,
   },
+
   cardDetails: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 13,
+    columnGap: 8,
+    rowGap: 14,
   },
+
   detailItem: {
-    width: "46%",
+    width: "47%",
+    minWidth: 0,
     gap: 4,
   },
+
   detailLabel: {
     fontSize: 10,
     color: COLORS.textSecondary,
   },
+
   detailValue: {
     fontSize: 12,
     fontWeight: "600",
     color: COLORS.text,
+    flexShrink: 1,
   },
+
   cardFooter: {
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    paddingTop: 10,
+    paddingTop: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 10,
   },
+
   actionLabel: {
     fontSize: 11,
     color: COLORS.textSecondary,
     fontWeight: "600",
   },
+
   emptyText: {
     textAlign: "center",
     color: COLORS.textSecondary,
     fontSize: 13,
-    padding: 25,
+    padding: 20,
   },
 });
