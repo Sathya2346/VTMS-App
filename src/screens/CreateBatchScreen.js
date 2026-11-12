@@ -173,10 +173,12 @@ function CheckBox({ checked }) {
 export default function CreateBatchScreen({ onBack, onCreate }) {
   const { width } = useWindowDimensions();
 
+  // Layout breakpoints
   const isMobile = width < 600;
-  const isDesktop = width >= 1100;
+  const isTablet = width >= 600 && width < 1024;
+  const isWideScreen = width >= 1024;
 
-  const fieldWidth = isMobile ? "100%" : "47%";
+  const fieldWidth = isMobile ? "100%" : "48%";
 
   const [batchName, setBatchName] = useState("");
   const [course, setCourse] = useState("");
@@ -432,7 +434,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
       <View
         style={[
           styles.scheduleLayout,
-          isDesktop && styles.scheduleLayoutDesktop,
+          isWideScreen && styles.scheduleLayoutWide,
         ]}
       >
         <FormSection
@@ -440,7 +442,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
           title="Schedule"
           style={[
             styles.scheduleCard,
-            isDesktop && styles.desktopScheduleCard,
+            isWideScreen && styles.scheduleCardWide,
           ]}
         >
           <View style={styles.fieldsWrap}>
@@ -484,7 +486,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
           title="Timing"
           style={[
             styles.scheduleCard,
-            isDesktop && styles.desktopScheduleCard,
+            isWideScreen && styles.scheduleCardWide,
           ]}
         >
           <View style={styles.fieldsWrap}>
@@ -536,16 +538,16 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
         <View
           style={[
             styles.allocationLayout,
-            isDesktop && styles.allocationLayoutDesktop,
+            isWideScreen && styles.allocationLayoutWide,
           ]}
         >
           <View
             style={[
               styles.allocationColumn,
-              isDesktop && styles.desktopAllocationColumn,
+              isWideScreen && styles.allocationColumnWide,
             ]}
           >
-            <Field label="Select Trainer" required style={{ width: "100%" }}>
+            <Field label="Select Trainer" required style={styles.fullWidth}>
               <Dropdown
                 value={trainer}
                 onValueChange={setTrainer}
@@ -586,7 +588,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
           <View
             style={[
               styles.allocationColumn,
-              isDesktop && styles.desktopAllocationColumn,
+              isWideScreen && styles.allocationColumnWide,
             ]}
           >
             <Text style={styles.subSectionTitle}>Select Trainee</Text>
@@ -665,11 +667,11 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
 
         {sendEmail ? (
           <View style={styles.emailFields}>
-            <Field label="From" style={{ width: "100%" }}>
+            <Field label="From" style={styles.fullWidth}>
               <Input value={ADMIN_EMAIL} editable={false} />
             </Field>
 
-            <Field label="To" style={{ width: "100%" }}>
+            <Field label="To" style={styles.fullWidth}>
               <Input
                 value={emailTo}
                 onChangeText={setEmailTo}
@@ -678,7 +680,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
               />
             </Field>
 
-            <Field label="Subject" style={{ width: "100%" }}>
+            <Field label="Subject" style={styles.fullWidth}>
               <Input
                 value={emailSubject}
                 onChangeText={setEmailSubject}
@@ -686,7 +688,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
               />
             </Field>
 
-            <Field label="Preview" style={{ width: "100%" }}>
+            <Field label="Preview" style={styles.fullWidth}>
               <Input
                 value={emailPreview}
                 onChangeText={setEmailPreview}
@@ -755,7 +757,7 @@ export default function CreateBatchScreen({ onBack, onCreate }) {
 
       {/* BATCH STATUS */}
       <FormSection icon="settings-outline" title="Batch Status">
-        <Field label="Status" style={{ width: "100%" }}>
+        <Field label="Status" style={styles.fullWidth}>
           <Dropdown
             value={status}
             onValueChange={setStatus}
@@ -814,8 +816,9 @@ const styles = StyleSheet.create({
   content: {
     width: "100%",
     alignSelf: "stretch",
+    flexGrow: 1,
     padding: 16,
-    paddingBottom: 110,
+    paddingBottom: 30,
     gap: 14,
   },
 
@@ -858,6 +861,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
+    minWidth: 0,
   },
 
   sectionIcon: {
@@ -872,7 +876,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     flex: 1,
-    flexShrink: 1,
+    minWidth: 0,
     fontSize: 15,
     lineHeight: 20,
     fontWeight: "700",
@@ -881,6 +885,7 @@ const styles = StyleSheet.create({
 
   fieldsWrap: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "flex-start",
@@ -891,6 +896,13 @@ const styles = StyleSheet.create({
     minWidth: 0,
     flexShrink: 1,
     gap: 6,
+  },
+
+  fullWidth: {
+    width: "100%",
+    minWidth: 0,
+    flexGrow: 0,
+    flexShrink: 1,
   },
 
   fieldLabel: {
@@ -947,15 +959,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+  // SCHEDULE AND TIMING
   scheduleLayout: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "column",
     gap: 14,
   },
 
-  scheduleLayoutDesktop: {
+  scheduleLayoutWide: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    flexWrap: "nowrap",
+    alignItems: "stretch",
   },
 
   scheduleCard: {
@@ -965,18 +980,22 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  desktopScheduleCard: {
-    flex: 1,
-    width: "50%",
+  scheduleCardWide: {
+    width: "48%",
+    maxWidth: "48%",
+    flexGrow: 1,
+    flexShrink: 1,
   },
 
   daysBlock: {
     width: "100%",
+    minWidth: 0,
     gap: 8,
   },
 
   daysContainer: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
@@ -1012,15 +1031,19 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
 
+  // TRAINER AND TRAINEE ALLOCATION
   allocationLayout: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "column",
     gap: 24,
   },
 
-  allocationLayoutDesktop: {
+  allocationLayoutWide: {
     flexDirection: "row",
+    flexWrap: "nowrap",
     alignItems: "flex-start",
+    gap: 20,
   },
 
   allocationColumn: {
@@ -1031,9 +1054,12 @@ const styles = StyleSheet.create({
     gap: 11,
   },
 
-  desktopAllocationColumn: {
-    flex: 1,
-    width: "50%",
+  allocationColumnWide: {
+    width: "48%",
+    maxWidth: "48%",
+    flexBasis: "48%",
+    flexGrow: 1,
+    flexShrink: 1,
   },
 
   subSectionTitle: {
@@ -1045,6 +1071,7 @@ const styles = StyleSheet.create({
 
   trainerInfo: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
@@ -1101,6 +1128,7 @@ const styles = StyleSheet.create({
 
   searchBox: {
     width: "100%",
+    minWidth: 0,
     height: 44,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -1117,11 +1145,11 @@ const styles = StyleSheet.create({
     height: 42,
     fontSize: 13,
     color: COLORS.text,
-    outlineStyle: "none",
   },
 
   traineeList: {
     width: "100%",
+    minWidth: 0,
     height: 190,
     borderWidth: 1,
     borderColor: "#CCCCCC",
@@ -1132,6 +1160,7 @@ const styles = StyleSheet.create({
 
   traineeRow: {
     width: "100%",
+    minWidth: 0,
     minHeight: 38,
     flexDirection: "row",
     alignItems: "center",
@@ -1141,6 +1170,7 @@ const styles = StyleSheet.create({
 
   traineeName: {
     flex: 1,
+    minWidth: 0,
     fontSize: 13,
     color: COLORS.text,
   },
@@ -1158,6 +1188,7 @@ const styles = StyleSheet.create({
 
   selectedChips: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
@@ -1178,6 +1209,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
+  // EMAIL
   emailToggle: {
     width: "100%",
     flexDirection: "row",
@@ -1225,6 +1257,7 @@ const styles = StyleSheet.create({
 
   selectedEmailTrainees: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
@@ -1281,8 +1314,10 @@ const styles = StyleSheet.create({
     color: COLORS.success,
   },
 
+  // FOOTER BUTTONS
   footerActions: {
     width: "100%",
+    minWidth: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "flex-end",
@@ -1292,7 +1327,7 @@ const styles = StyleSheet.create({
   },
 
   footerActionsMobile: {
-    justifyContent: "stretch",
+    justifyContent: "flex-start",
   },
 
   actionButton: {
