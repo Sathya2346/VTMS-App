@@ -205,14 +205,26 @@ function BatchCard({ batch, onEdit, onDelete }) {
 function SummaryCard({ label, value, icon, color }) {
   return (
     <View style={styles.summaryCard}>
-      <View style={[styles.summaryIcon, { backgroundColor: `${color}18` }]}>
-        <Ionicons name={icon} size={21} color={color} />
+      <View
+        style={[
+          styles.summaryIconContainer,
+          { backgroundColor: `${color}15` },
+        ]}
+      >
+        <Ionicons
+          name={icon}
+          size={24}
+          color={color}
+        />
       </View>
 
-      <View style={styles.summaryInfo}>
-        <Text style={styles.summaryValue}>{value}</Text>
-        <Text style={styles.summaryLabel}>{label}</Text>
-      </View>
+      <Text style={styles.summaryLabel}>
+        {label}
+      </Text>
+
+      <Text style={styles.summaryValue}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -287,27 +299,30 @@ export default function BatchManagementScreen({
 
       {/* SUMMARY */}
       <View style={styles.summaryRow}>
-        <SummaryCard
-          label="Total Batches"
-          value={INITIAL_BATCHES.length}
-          icon="albums-outline"
-          color={COLORS.primaryLight}
-        />
+      <SummaryCard
+        label="Total Batches"
+        value={batches.length}
+        icon="albums-outline"
+        color={COLORS.primaryLight}
+      />
 
-        <SummaryCard
-          label="Active Batches"
-          value={INITIAL_BATCHES.filter((b) => b.status === "Active").length}
-          icon="checkmark-circle-outline"
-          color="#16833B"
-        />
+      <SummaryCard
+        label="Active Batches"
+        value={batches.filter((b) => b.status === "Active").length}
+        icon="checkmark-circle-outline"
+        color="#16833B"
+      />
 
-        <SummaryCard
-          label="Total Students"
-          value={INITIAL_BATCHES.reduce((sum, b) => sum + b.students, 0)}
-          icon="people-outline"
-          color="#C47A00"
-        />
-      </View>
+      <SummaryCard
+        label="Total Students"
+        value={batches.reduce(
+          (sum, b) => sum + Number(b.students || 0),
+          0
+        )}
+        icon="people-outline"
+        color="#C47A00"
+      />
+    </View>
 
       {/* ALL BATCHES */}
       <View style={styles.listContainer}>

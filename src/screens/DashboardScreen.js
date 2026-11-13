@@ -22,7 +22,9 @@ import { COLORS } from "../constants/theme";
 import TrainerManagementScreen from "./TrainerManagementScreen";
 import BatchManagementScreen from "./BatchManagementScreen";
 import CreateBatchScreen from "./CreateBatchScreen";
-
+import BatchManagementScreen, {
+  INITIAL_BATCHES,
+} from "./BatchManagementScreen";
 // ORIGINAL VTMS DATA
 
 const BATCHES = [
@@ -113,7 +115,11 @@ export default function DashboardScreen() {
   const isMobile = width < 1024;
 
   const [activeMenu, setActiveMenu] = useState("Dashboard");
+
+  const [batches, setBatches] = useState(INITIAL_BATCHES);
   const [showCreateBatch, setShowCreateBatch] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const contentColumns = width >= 1100 ? 2 : 1;
@@ -121,6 +127,65 @@ export default function DashboardScreen() {
   const handleMenuSelect = (menu) => {
     setActiveMenu(menu);
     setDrawerVisible(false);
+  };
+  const handleCreateBatch = () => {
+    setSelectedBatch(null);
+    setShowCreateBatch(true);
+  };
+
+  const handleEditBatch = (batch) => {
+    setSelectedBatch(batch);
+    setShowCreateBatch(true);
+  };
+
+  const handleSaveBatch = (batchData) => {
+    const updatedBatch = {
+      ...selectedBatch,
+      ...batchData,
+
+      id: selectedBatch?.id || Date.now(),
+
+      trainer:
+        batchData.trainerName ||
+        batchData.trainer ||
+        selectedBatch?.trainer ||
+        "",
+
+      trainerEmail: batchData.trainer || "",
+
+      duration:
+        batchData.duration ||
+        batchData.courseDuration ||
+        "",
+
+      startDate: batchData.startDate.replaceAll("/", "-"),
+      endDate: batchData.endDate.replaceAll("/", "-"),
+
+      trainees: batchData.trainees || [],
+      students: (batchData.trainees || []).length,
+    };
+
+    if (selectedBatch) {
+      setBatches((currentBatches) =>
+        currentBatches.map((batch) =>
+          batch.id === selectedBatch.id ? updatedBatch : batch
+        )
+      );
+    } else {
+      setBatches((currentBatches) => [
+        ...currentBatches,
+        updatedBatch,
+      ]);
+    }
+
+    setSelectedBatch(null);
+    setShowCreateBatch(false);
+  };
+
+  const handleDeleteBatch = (batchId) => {
+    setBatches((currentBatches) =>
+      currentBatches.filter((batch) => batch.id !== batchId)
+    );
   };
 
   const reportButton = (
@@ -155,19 +220,26 @@ export default function DashboardScreen() {
         )}
 
         {/* MAIN DASHBOARD */}
+
         {activeMenu === "Batch Management" && showCreateBatch ? (
           <CreateBatchScreen
-            onBack={() => setShowCreateBatch(false)}
-            onCreate={(batchData) => {
-              console.log("New Batch:", batchData);
+            key={selectedBatch?.id || "new-batch"}
+            initialData={selectedBatch}
+            isEdit={Boolean(selectedBatch)}
+            onBack={() => {
               setShowCreateBatch(false);
+              setSelectedBatch(null);
             }}
+            onCreate={handleSaveBatch}
           />
         ) : activeMenu === "Trainer Management" ? (
           <TrainerManagementScreen />
         ) : activeMenu === "Batch Management" ? (
           <BatchManagementScreen
-            onCreateBatch={() => setShowCreateBatch(true)}
+            batches={batches}
+            onCreateBatch={handleCreateBatch}
+            onEditBatch={handleEditBatch}
+            onDeleteBatch={handleDeleteBatch}
           />
         ) : (
         <ScrollView
